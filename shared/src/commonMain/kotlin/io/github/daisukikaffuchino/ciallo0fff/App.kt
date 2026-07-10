@@ -67,13 +67,21 @@ fun App() {
             }.getOrDefault(ThemeMode.System),
         )
     }
+    var dynamicColor by remember {
+        mutableStateOf(AppSettings.getBoolean("dynamicColor", false) && PlatformActions.supportsDynamicColor)
+    }
     val darkTheme = when (themeMode) {
         ThemeMode.System -> isSystemInDarkTheme()
         ThemeMode.Light -> false
         ThemeMode.Dark -> true
     }
+    val colorScheme = if (dynamicColor && PlatformActions.supportsDynamicColor) {
+        platformDynamicColorScheme(darkTheme) ?: sakuraColorScheme(darkTheme)
+    } else {
+        sakuraColorScheme(darkTheme)
+    }
     MaterialTheme(
-        colorScheme = sakuraColorScheme(darkTheme),
+        colorScheme = colorScheme,
         typography = Typography().withFontFamily(appFontFamily),
     ) {
         ProvideToastManager {
@@ -82,6 +90,11 @@ fun App() {
                 setThemeMode = {
                     themeMode = it
                     AppSettings.putString("themeMode", it.name)
+                },
+                dynamicColor = dynamicColor,
+                setDynamicColor = {
+                    dynamicColor = it && PlatformActions.supportsDynamicColor
+                    AppSettings.putBoolean("dynamicColor", dynamicColor)
                 },
             )
         }
@@ -169,6 +182,8 @@ private fun sakuraColorScheme(darkTheme: Boolean): ColorScheme =
 private fun ControllerApp(
     themeMode: ThemeMode,
     setThemeMode: (ThemeMode) -> Unit,
+    dynamicColor: Boolean,
+    setDynamicColor: (Boolean) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     var selectedPage by remember { mutableStateOf(AppPage.Controller) }
@@ -216,7 +231,6 @@ private fun ControllerApp(
     var hyperMode by remember { mutableStateOf(HyperMode.Toggle) }
     var hyperToggleLight by remember { mutableStateOf(false) }
     var hyperCount by remember { mutableStateOf(0) }
-    var dynamicColor by remember { mutableStateOf(AppSettings.getBoolean("dynamicColor", false)) }
     var hideDesktopScrollbar by remember { mutableStateOf(AppSettings.getBoolean("hideDesktopScrollbar", false)) }
     var developmentMode by remember { mutableStateOf(AppSettings.getBoolean("developmentMode", false)) }
     var client by remember { mutableStateOf<PlatformWebSocketClient?>(null) }
@@ -491,11 +505,8 @@ private fun ControllerApp(
                                     kanban = it
                                     AppSettings.putString("kanban", it.name)
                                 },
-                                dynamicColor = dynamicColor,
-                                setDynamicColor = {
-                                    dynamicColor = it
-                                    AppSettings.putBoolean("dynamicColor", it)
-                                },
+                        dynamicColor = dynamicColor,
+                        setDynamicColor = setDynamicColor,
                                 themeMode = themeMode,
                                 setThemeMode = setThemeMode,
                                 developmentMode = developmentMode,
@@ -831,6 +842,7 @@ internal fun expressiveContainerColor(): Color =
 @Composable
 private fun ExpressiveItem(
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     leadingIcon: (@Composable () -> Unit)? = null,
     headlineContent: @Composable () -> Unit,
     supportingContent: (@Composable () -> Unit)? = null,
@@ -850,7 +862,10 @@ private fun ExpressiveItem(
     )
     Surface(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .graphicsLayer { alpha = if (enabled) 1f else 0.38f },
+        enabled = enabled,
         shape = RoundedCornerShape(corner),
         color = expressiveContainerColor(),
         interactionSource = interactionSource,
@@ -906,9 +921,11 @@ internal fun SettingValueRow(
     trailingIcon: DrawableResource? = null,
     trailingIconTint: Boolean = true,
     trailingIconSize: Dp = 24.dp,
+    enabled: Boolean = true,
     onClick: () -> Unit,
 ) {
     ExpressiveItem(
+        enabled = enabled,
         leadingIcon = icon?.let {
             {
                 ResourceIcon(it, title, modifier = Modifier.size(iconSize), tint = iconTint)
@@ -933,9 +950,11 @@ internal fun SettingSwitchRow(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     icon: DrawableResource? = null,
+    enabled: Boolean = true,
 ) {
     ExpressiveItem(
         modifier = modifier,
+        enabled = enabled,
         leadingIcon = icon?.let {
             {
                 ResourceIcon(it, title)
@@ -946,8 +965,9 @@ internal fun SettingSwitchRow(
         trailingContent = {
             Switch(
                 checked = checked,
-                onCheckedChange = onCheckedChange,
+                onCheckedChange = if (enabled) onCheckedChange else null,
                 modifier = Modifier.padding(start = 8.dp),
+                enabled = enabled,
             )
         },
         onClick = { onCheckedChange(!checked) },

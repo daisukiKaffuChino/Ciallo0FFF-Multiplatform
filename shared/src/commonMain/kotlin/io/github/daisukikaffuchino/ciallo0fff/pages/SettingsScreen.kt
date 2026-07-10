@@ -71,6 +71,7 @@ internal fun SettingsScreen(
     val serverAddressEmptyToast = stringResource(Res.string.toast_server_address_empty)
     val identityJsonInvalidToast = stringResource(Res.string.toast_identity_json_invalid)
     val customUserAgentEmptyToast = stringResource(Res.string.toast_custom_user_agent_empty)
+    val batteryOptimizationNotNeededToast = stringResource(Res.string.toast_battery_optimization_not_needed)
     ScrollablePage(
         modifier = modifier,
         verticalSpacing = 4.dp,
@@ -106,9 +107,10 @@ internal fun SettingsScreen(
                 SettingSwitchRow(
                     stringResource(Res.string.setting_dynamic_color),
                     stringResource(Res.string.setting_dynamic_color_summary),
-                    dynamicColor,
+                    dynamicColor && PlatformActions.supportsDynamicColor,
                     setDynamicColor,
-                    icon = Res.drawable.ic_palette
+                    icon = Res.drawable.ic_palette,
+                    enabled = PlatformActions.supportsDynamicColor,
                 )
             }
         }
@@ -118,11 +120,16 @@ internal fun SettingsScreen(
                     stringResource(Res.string.setting_ignore_battery),
                     stringResource(Res.string.setting_ignore_battery_summary),
                     Res.drawable.ic_battery_error,
-                ) { PlatformActions.requestIgnoreBatteryOptimization() }
+                ) {
+                    if (!PlatformActions.requestIgnoreBatteryOptimization()) {
+                        Toast.show(batteryOptimizationNotNeededToast)
+                    }
+                }
                 SettingValueRow(
                     stringResource(Res.string.setting_extreme_dark_mode),
                     stringResource(Res.string.setting_extreme_dark_mode_summary),
                     Res.drawable.ic_brightness_4,
+                    enabled = PlatformActions.supportsExtremeDarkMode,
                 ) { PlatformActions.openExtremeDarkModeSettings() }
             }
         }

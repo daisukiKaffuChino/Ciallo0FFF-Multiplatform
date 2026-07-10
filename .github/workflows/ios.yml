@@ -1,0 +1,80 @@
+name: iOS Build
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  build-ios:
+    name: iOS ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: simulator-arm64
+            runner: macos-15
+            configuration: Debug
+            sdk: iphonesimulator
+            destination: generic/platform=iOS Simulator
+            gradle-task: :shared:linkDebugFrameworkIosSimulatorArm64
+          - name: device-arm64
+            runner: macos-15
+            configuration: Release
+            sdk: iphoneos
+            destination: generic/platform=iOS
+            gradle-task: :shared:linkReleaseFrameworkIosArm64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Configure Gradle memory
+        run: |
+          mkdir -p ~/.gradle
+          {
+            echo "org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8"
+            echo "kotlin.daemon.jvmargs=-Xmx2048M"
+          } >> ~/.gradle/gradle.properties
+
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
+
+      - name: Show tool versions
+        run: |
+          xcodebuild -version
+          ./gradlew --version
+
+      - name: Build Kotlin framework
+        run: ./gradlew ${{ matrix.gradle-task }} --no-configuration-cache --stacktrace
+
+      - name: Build iOS app
+        run: |
+          xcodebuild \
+            -project iosApp/iosApp.xcodeproj \
+            -scheme iosApp \
+            -configuration "${{ matrix.configuration }}" \
+            -sdk "${{ matrix.sdk }}" \
+            -destination "${{ matrix.destination }}" \
+            -derivedDataPath "build/ios-${{ matrix.name }}" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build
+
+      - name: Upload build products
+        uses: actions/upload-artifact@v4
+        with:
+          name: Ciallo0FFF-ios-${{ matrix.name }}
+          path: build/ios-${{ matrix.name }}/Build/Products
+          if-no-files-found: error

@@ -1,5 +1,6 @@
 package io.github.daisukikaffuchino.ciallo0fff
 
+import androidx.compose.material3.ColorScheme
 import platform.Foundation.NSUserDefaults
 import platform.Foundation.NSURL
 import platform.Foundation.NSDate
@@ -36,11 +37,15 @@ actual fun formattedNow(): String =
         dateFormat = "MM/dd - HH:mm:ss"
     }.stringFromDate(NSDate())
 
+actual fun platformDynamicColorScheme(darkTheme: Boolean): ColorScheme? = null
+
 actual object PlatformActions {
     actual val isAndroid: Boolean = false
     actual val usesDesktopScrollbars: Boolean = false
     actual val canOpenLiveRoomInClient: Boolean = false
     actual val isTestEnvironment: Boolean = false
+    actual val supportsDynamicColor: Boolean = false
+    actual val supportsExtremeDarkMode: Boolean = false
     actual fun openLiveRoomWebsite() {
         openUrl("https://live.bilibili.com/h5/23049483")
     }
@@ -50,7 +55,7 @@ actual object PlatformActions {
     }
 
     actual fun openLiveRoomClient() = Unit
-    actual fun requestIgnoreBatteryOptimization() = Unit
+    actual fun requestIgnoreBatteryOptimization(): Boolean = false
     actual fun openExtremeDarkModeSettings() = Unit
     actual fun exitApp() = Unit
 }

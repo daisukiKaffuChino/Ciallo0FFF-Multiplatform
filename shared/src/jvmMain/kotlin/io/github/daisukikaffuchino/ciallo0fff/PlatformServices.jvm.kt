@@ -1,5 +1,6 @@
 package io.github.daisukikaffuchino.ciallo0fff
 
+import androidx.compose.material3.ColorScheme
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.ByteArrayOutputStream
@@ -49,10 +50,14 @@ actual fun userAgentBuildId(): String = "UP1A.231005.007"
 actual fun formattedNow(): String =
     LocalDateTime.now().format(DateTimeFormatter.ofPattern("MM/dd - HH:mm:ss"))
 
+actual fun platformDynamicColorScheme(darkTheme: Boolean): ColorScheme? = null
+
 actual object PlatformActions {
     actual val isAndroid: Boolean = false
     actual val usesDesktopScrollbars: Boolean = true
     actual val canOpenLiveRoomInClient: Boolean = false
+    actual val supportsDynamicColor: Boolean = false
+    actual val supportsExtremeDarkMode: Boolean = false
     actual val isTestEnvironment: Boolean
         get() = System.getProperty("ciallo0fff.testEnvironment") == "true"
 
@@ -69,7 +74,7 @@ actual object PlatformActions {
     }
 
     actual fun openLiveRoomClient() = Unit
-    actual fun requestIgnoreBatteryOptimization() = Unit
+    actual fun requestIgnoreBatteryOptimization(): Boolean = false
     actual fun openExtremeDarkModeSettings() = Unit
     actual fun exitApp() {
         exitProcess(0)

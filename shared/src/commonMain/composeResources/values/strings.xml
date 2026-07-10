@@ -118,6 +118,7 @@
     <string name="toast_custom_user_agent_empty">自定义 UserAgent 不能为空</string>
     <string name="toast_custom_command_invalid">自定义指令必须是 JSON 对象或数组</string>
     <string name="toast_custom_command_send_failed">未连接，指令未发送</string>
+    <string name="toast_battery_optimization_not_needed">不需要执行此操作</string>
 
     <string name="color_red">红色</string>
     <string name="color_blue">蓝色</string>

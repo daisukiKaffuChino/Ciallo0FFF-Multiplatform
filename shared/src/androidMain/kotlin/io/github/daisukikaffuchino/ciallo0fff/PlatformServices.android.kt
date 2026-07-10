@@ -11,6 +11,9 @@ import android.provider.Settings
 import android.util.Base64
 import android.webkit.WebSettings
 import android.webkit.WebView
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import java.lang.ref.WeakReference
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
@@ -82,9 +85,19 @@ actual fun userAgentBuildId(): String = Build.ID
 actual fun formattedNow(): String =
     LocalDateTime.now().format(DateTimeFormatter.ofPattern("MM/dd - HH:mm:ss"))
 
+actual fun platformDynamicColorScheme(darkTheme: Boolean): ColorScheme? {
+    val context = AndroidContextHolder.context ?: return null
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return null
+    return if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+}
+
 actual object PlatformActions {
     actual val isAndroid: Boolean = true
     actual val usesDesktopScrollbars: Boolean = false
+    actual val supportsDynamicColor: Boolean
+        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    actual val supportsExtremeDarkMode: Boolean
+        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     actual val isTestEnvironment: Boolean
         get() = AndroidContextHolder.context?.let { context ->
             (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
@@ -116,12 +129,12 @@ actual object PlatformActions {
         startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
     }
 
-    actual fun requestIgnoreBatteryOptimization() {
-        val context = AndroidContextHolder.context ?: return
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return
-        val powerManager = context.getSystemService(Context.POWER_SERVICE) as? PowerManager ?: return
-        if (powerManager.isIgnoringBatteryOptimizations(context.packageName)) return
-        startActivity(
+    actual fun requestIgnoreBatteryOptimization(): Boolean {
+        val context = AndroidContextHolder.context ?: return false
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return false
+        val powerManager = context.getSystemService(Context.POWER_SERVICE) as? PowerManager ?: return false
+        if (powerManager.isIgnoringBatteryOptimizations(context.packageName)) return false
+        return startActivity(
             Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
                 data = Uri.parse("package:${context.packageName}")
             },
@@ -129,7 +142,7 @@ actual object PlatformActions {
     }
 
     actual fun openExtremeDarkModeSettings() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
+        if (!supportsExtremeDarkMode) return
         startActivity(Intent("android.settings.REDUCE_BRIGHT_COLORS_SETTINGS"))
     }
 
@@ -137,11 +150,11 @@ actual object PlatformActions {
         AndroidContextHolder.activity?.get()?.finishAndRemoveTask()
     }
 
-    private fun startActivity(intent: Intent) {
-        val context = AndroidContextHolder.context ?: return
-        runCatching {
+    private fun startActivity(intent: Intent): Boolean {
+        val context = AndroidContextHolder.context ?: return false
+        return runCatching {
             context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-        }
+        }.isSuccess
     }
 }
 

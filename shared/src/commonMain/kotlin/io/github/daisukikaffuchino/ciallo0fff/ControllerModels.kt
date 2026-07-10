@@ -1,5 +1,6 @@
 package io.github.daisukikaffuchino.ciallo0fff
 
+import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.graphics.Color
 import ciallo0fff.shared.generated.resources.Res
 import ciallo0fff.shared.generated.resources.color_blue
@@ -144,16 +145,19 @@ expect fun defaultUserAgent(): String
 expect fun userAgentChromeVersion(): String
 expect fun userAgentBuildId(): String
 expect fun formattedNow(): String
+expect fun platformDynamicColorScheme(darkTheme: Boolean): ColorScheme?
 
 expect object PlatformActions {
     val isAndroid: Boolean
     val usesDesktopScrollbars: Boolean
     val canOpenLiveRoomInClient: Boolean
     val isTestEnvironment: Boolean
+    val supportsDynamicColor: Boolean
+    val supportsExtremeDarkMode: Boolean
     fun openLiveRoomWebsite()
     fun openLiveRoomClient()
     fun openUrl(url: String)
-    fun requestIgnoreBatteryOptimization()
+    fun requestIgnoreBatteryOptimization(): Boolean
     fun openExtremeDarkModeSettings()
     fun exitApp()
 }
