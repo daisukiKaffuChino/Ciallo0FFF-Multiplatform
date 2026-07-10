@@ -35,15 +35,13 @@ jobs:
       - name: Make Gradle executable
         run: chmod +x ./gradlew
 
-      - name: Show installed Xcode
+      - name: Select Xcode
         run: |
           echo "===== macOS ====="
           sw_vers
 
           echo "===== Installed Xcodes ====="
           ls -1 /Applications | grep Xcode || true
-
-          echo "===== Selecting newest Xcode ====="
 
           if [ -d "/Applications/Xcode_26.5.app" ]; then
             sudo xcode-select -s /Applications/Xcode_26.5.app/Contents/Developer
@@ -61,7 +59,7 @@ jobs:
             --no-configuration-cache \
             --stacktrace
 
-      - name: Build iOS app
+      - name: Build iOS App
         run: |
           xcodebuild \
             -project iosApp/iosApp.xcodeproj \
@@ -72,11 +70,31 @@ jobs:
             -derivedDataPath build/ios-device-arm64 \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
             build
 
-      - name: Upload build products
+      - name: Create unsigned IPA
+        run: |
+          APP_PATH=$(find build/ios-device-arm64/Build/Products -name "*.app" -type d | head -n 1)
+
+          if [ -z "$APP_PATH" ]; then
+            echo "App not found!"
+            exit 1
+          fi
+
+          echo "Found app:"
+          echo "$APP_PATH"
+
+          mkdir Payload
+          cp -R "$APP_PATH" Payload/
+
+          /usr/bin/zip -qry Ciallo0FFF-unsigned.ipa Payload
+
+          rm -rf Payload
+
+      - name: Upload unsigned IPA
         uses: actions/upload-artifact@v4
         with:
-          name: Ciallo0FFF-ios-device-arm64
-          path: build/ios-device-arm64/Build/Products
+          name: Ciallo0FFF-unsigned-ipa
+          path: Ciallo0FFF-unsigned.ipa
           if-no-files-found: error
