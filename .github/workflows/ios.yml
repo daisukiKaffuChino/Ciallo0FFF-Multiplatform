@@ -17,12 +17,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: simulator-arm64
-            runner: macos-15
-            configuration: Debug
-            sdk: iphonesimulator
-            destination: generic/platform=iOS Simulator
-            gradle-task: :shared:linkDebugFrameworkIosSimulatorArm64
           - name: device-arm64
             runner: macos-15
             configuration: Release
