@@ -108,7 +108,7 @@
     <string name="about_open_source">开放源代码</string>
     <string name="about_open_source_summary">github.com/daisukikaffuchino/Ciallo0FFF-Multiplatform，以 Apache-2.0 协议授权。</string>
     <string name="about_changelog">更新日志</string>
-    <string name="about_changelog_summary">2.0.0 弃用 reOpenLua+，使用跨平台技术重构项目。</string>
+    <string name="about_changelog_summary">2.1.0 重构 WebSocket 实现；优化各平台深色模式逻辑\n2.0.0 弃用 reOpenLua+，使用跨平台技术重构项目。</string>
     <string name="about_overview">应用概览</string>
     <string name="about_overview_summary">这是一个用于 0fff.top 直播间背景控制的 WebSocket 客户端，基于 Kotlin Multiplatform 技术构建，现支持 Windows/macOS/Android/iOS 平台。不得滥用和故意攻击他人服务器，产生的所有后果与开发者无关。本应用与柚子社无关。\n致谢 @財神貓貓</string>
     <string name="about_tips">Tips</string>
