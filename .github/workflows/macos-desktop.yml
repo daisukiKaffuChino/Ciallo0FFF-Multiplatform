@@ -24,10 +24,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "21"
@@ -44,7 +44,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Package DMG
-        run: ./gradlew :desktopApp:packageDmg --no-configuration-cache --stacktrace
+        run: ./gradlew :desktopApp:packageReleaseDmg --no-configuration-cache --stacktrace
 
       - name: Collect artifact
         run: |
@@ -52,7 +52,7 @@ jobs:
           cp desktopApp/build/compose/binaries/main/dmg/*.dmg "artifacts/Ciallo0FFF-macos-${{ matrix.arch }}.dmg"
 
       - name: Upload DMG
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: Ciallo0FFF-macos-${{ matrix.arch }}
           path: artifacts/*.dmg
