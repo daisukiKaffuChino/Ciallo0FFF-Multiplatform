@@ -320,68 +320,80 @@ private fun ControllerApp(
         }
         connecting = true
         userText = connectingText
-        statusText = serverAddress
-        val nextClient = PlatformWebSocketClient(
-            url = serverAddress,
-            options = WebSocketOptions(fullRequestHeaders, trustAllCertificates, selectedUserAgent()),
-            events = object : WebSocketEvents {
-                override fun onOpen() {
-                    scope.launch {
-                        connected = true
-                        connecting = false
-                        reconnectCount = 0
-                        userText = connectedText
-                        statusText = timedStatus(connectedText)
-                        sendRaw(identityJson, handshake = true)
-                    }
-                }
-
-                override fun onClosed(code: Int, reason: String?) {
-                    scope.launch {
-                        connected = false
-                        connecting = false
-                        userText = disconnectedText
-                        statusText = friendlyConnectionError(
-                            message = reason,
-                            serverAddress = serverAddress,
-                            unknownHostPrefix = unknownHostPrefix,
-                        ) ?: "$connectionClosedPrefix$code${reason?.let { " $it" } ?: ""}"
-                        rainbowActive = false
-                        hyperActive = false
-                        if (autoReconnect) {
-                            reconnectCount += 1
-                            delay(900.milliseconds)
-                            connect()
+        val connectionAddress = normalizedWebSocketAddress(serverAddress)
+        statusText = connectionAddress
+        val nextClient = runCatching {
+            PlatformWebSocketClient(
+                url = connectionAddress,
+                options = WebSocketOptions(fullRequestHeaders, trustAllCertificates, selectedUserAgent()),
+                events = object : WebSocketEvents {
+                    override fun onOpen() {
+                        scope.launch {
+                            connected = true
+                            connecting = false
+                            reconnectCount = 0
+                            userText = connectedText
+                            statusText = timedStatus(connectedText)
+                            sendRaw(identityJson, handshake = true)
                         }
                     }
-                }
 
-                override fun onMessage(text: String) {
-                    scope.launch {
-                        val status = extractStatusMessage(text)
-                        if (status != null) {
-                            statusText = status
-                            if (status.contains("Welcome controller")) userText = status
-                        } else {
-                            statusText = text.take(160)
+                    override fun onClosed(code: Int, reason: String?) {
+                        scope.launch {
+                            connected = false
+                            connecting = false
+                            userText = disconnectedText
+                            statusText = friendlyConnectionError(
+                                message = reason,
+                                serverAddress = connectionAddress,
+                                unknownHostPrefix = unknownHostPrefix,
+                            ) ?: "$connectionClosedPrefix$code${reason?.let { " $it" } ?: ""}"
+                            rainbowActive = false
+                            hyperActive = false
+                            if (autoReconnect) {
+                                reconnectCount += 1
+                                delay(900.milliseconds)
+                                connect()
+                            }
                         }
                     }
-                }
 
-                override fun onError(message: String) {
-                    scope.launch {
-                        connecting = false
-                        statusText = friendlyConnectionError(
-                            message = message,
-                            serverAddress = serverAddress,
-                            unknownHostPrefix = unknownHostPrefix,
-                        ) ?: "$errorPrefix$message"
+                    override fun onMessage(text: String) {
+                        scope.launch {
+                            val status = extractStatusMessage(text)
+                            if (status != null) {
+                                statusText = status
+                                if (status.contains("Welcome controller")) userText = status
+                            } else {
+                                statusText = text.take(160)
+                            }
+                        }
                     }
-                }
-            },
-        )
+
+                    override fun onError(message: String) {
+                        scope.launch {
+                            connecting = false
+                            statusText = friendlyConnectionError(
+                                message = message,
+                                serverAddress = connectionAddress,
+                                unknownHostPrefix = unknownHostPrefix,
+                            ) ?: "$errorPrefix$message"
+                        }
+                    }
+                },
+            )
+        }.getOrElse {
+            connecting = false
+            statusText = "$errorPrefix${it.message ?: it::class.simpleName.orEmpty()}"
+            return
+        }
         client = nextClient
-        nextClient.connect()
+        runCatching {
+            nextClient.connect()
+        }.onFailure {
+            connecting = false
+            statusText = "$errorPrefix${it.message ?: it::class.simpleName.orEmpty()}"
+        }
     }
 
     fun disconnect() {

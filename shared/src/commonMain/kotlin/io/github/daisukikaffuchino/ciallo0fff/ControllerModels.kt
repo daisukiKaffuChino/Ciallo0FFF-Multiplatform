@@ -167,6 +167,19 @@ expect object PlatformActions {
 fun commandJson(color: String, label: String): String =
     """{"type":"command","command":"set_background","color":"${jsonEscape(color)}","text_label":"${jsonEscape(label)}"}"""
 
+fun normalizedWebSocketAddress(address: String): String {
+    val value = address.trim()
+    if (value.isBlank()) return value
+    return when {
+        value.startsWith("ws://", ignoreCase = true) ||
+            value.startsWith("wss://", ignoreCase = true) -> value
+        value.startsWith("http://", ignoreCase = true) -> "ws://${value.drop("http://".length)}"
+        value.startsWith("https://", ignoreCase = true) -> "wss://${value.drop("https://".length)}"
+        "://" in value -> value
+        else -> "ws://$value"
+    }
+}
+
 fun randomUserAgent(): String {
     val releases = listOf("9", "10", "11", "12", "13", "14", "15", "16", "17")
     val deviceModels = listOf(
