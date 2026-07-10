@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,6 +54,7 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.milliseconds
 
 private val LocalSegmentedGroup = staticCompositionLocalOf { false }
 
@@ -71,11 +73,20 @@ fun App() {
         mutableStateOf(AppSettings.getBoolean("dynamicColor", false) && PlatformActions.supportsDynamicColor)
     }
     val composeSystemDarkTheme = isSystemInDarkTheme()
-    val platformSystemDarkTheme = remember(themeMode, composeSystemDarkTheme) {
-        platformSystemDarkTheme()
+    var detectedPlatformSystemDarkTheme by remember { mutableStateOf<Boolean?>(null) }
+    LaunchedEffect(themeMode) {
+        PlatformActions.applyThemeMode(themeMode)
+        if (themeMode == ThemeMode.System) {
+            while (isActive) {
+                detectedPlatformSystemDarkTheme = platformSystemDarkTheme()
+                delay(1_000.milliseconds)
+            }
+        } else {
+            detectedPlatformSystemDarkTheme = null
+        }
     }
     val darkTheme = when (themeMode) {
-        ThemeMode.System -> platformSystemDarkTheme ?: composeSystemDarkTheme
+        ThemeMode.System -> detectedPlatformSystemDarkTheme ?: composeSystemDarkTheme
         ThemeMode.Light -> false
         ThemeMode.Dark -> true
     }
@@ -83,9 +94,6 @@ fun App() {
         platformDynamicColorScheme(darkTheme) ?: sakuraColorScheme(darkTheme)
     } else {
         sakuraColorScheme(darkTheme)
-    }
-    LaunchedEffect(themeMode) {
-        PlatformActions.applyThemeMode(themeMode)
     }
     MaterialTheme(
         colorScheme = colorScheme,
@@ -126,6 +134,36 @@ private fun Typography.withFontFamily(fontFamily: FontFamily): Typography =
         labelMedium = labelMedium.copy(fontFamily = fontFamily),
         labelSmall = labelSmall.copy(fontFamily = fontFamily),
     )
+
+private fun friendlyConnectionError(
+    message: String?,
+    serverAddress: String,
+    unknownHostPrefix: String,
+): String? {
+    val value = message?.trim().orEmpty()
+    if (value.isBlank()) return null
+    return if (value.isUnknownHostMessage()) {
+        "$unknownHostPrefix${serverHost(serverAddress)}"
+    } else {
+        null
+    }
+}
+
+private fun String.isUnknownHostMessage(): Boolean {
+    val lower = lowercase()
+    return "unknownhost" in lower ||
+        "unknown host" in lower ||
+        "no such host" in lower ||
+        "name or service not known" in lower ||
+        "nodename nor servname provided" in lower ||
+        "getaddrinfo failed" in lower ||
+        "不知道这样的主机" in this
+}
+
+private fun serverHost(serverAddress: String): String {
+    val withoutScheme = serverAddress.substringAfter("://", serverAddress)
+    return withoutScheme.substringBefore('/').substringBefore('?').ifBlank { serverAddress }
+}
 
 private fun sakuraColorScheme(darkTheme: Boolean): ColorScheme =
     if (darkTheme) {
@@ -193,7 +231,7 @@ private fun ControllerApp(
     setDynamicColor: (Boolean) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
-    var selectedPage by remember { mutableStateOf(AppPage.Controller) }
+    var selectedPage by rememberSaveable { mutableStateOf(AppPage.Controller) }
     var serverAddress by remember { mutableStateOf(AppSettings.getString("serverAddress", DefaultServerAddress)) }
     var identityJson by remember { mutableStateOf(AppSettings.getString("identityJson", DefaultIdentityJson)) }
     var customUserAgent by remember { mutableStateOf(AppSettings.getString("customUserAgent", "")) }
@@ -220,13 +258,12 @@ private fun ControllerApp(
     val connectedText = stringResource(Res.string.status_connected)
     val sendSuccessText = stringResource(Res.string.status_send_success)
     val sendFailureText = stringResource(Res.string.status_send_failure)
-    val identitySentText = stringResource(Res.string.status_identity_sent)
     val connectionClosedPrefix = stringResource(Res.string.status_connection_closed_prefix)
     val errorPrefix = stringResource(Res.string.status_error_prefix)
+    val unknownHostPrefix = stringResource(Res.string.status_error_unknown_host_prefix)
     val sendFailedToast = stringResource(Res.string.status_send_failed)
     val commandLightOn = stringResource(Res.string.command_light_on)
     val commandLightOff = stringResource(Res.string.command_light_off)
-    val commandToggle = stringResource(Res.string.command_toggle)
     val controllerColorLabels = ControllerColors.map { stringResource(it.labelRes) }
     var userText by remember { mutableStateOf(disconnectedText) }
     var statusText by remember { mutableStateOf(idleText) }
@@ -304,12 +341,16 @@ private fun ControllerApp(
                         connected = false
                         connecting = false
                         userText = disconnectedText
-                        statusText = "$connectionClosedPrefix$code${reason?.let { " $it" } ?: ""}"
+                        statusText = friendlyConnectionError(
+                            message = reason,
+                            serverAddress = serverAddress,
+                            unknownHostPrefix = unknownHostPrefix,
+                        ) ?: "$connectionClosedPrefix$code${reason?.let { " $it" } ?: ""}"
                         rainbowActive = false
                         hyperActive = false
                         if (autoReconnect) {
                             reconnectCount += 1
-                            delay(900)
+                            delay(900.milliseconds)
                             connect()
                         }
                     }
@@ -330,7 +371,11 @@ private fun ControllerApp(
                 override fun onError(message: String) {
                     scope.launch {
                         connecting = false
-                        statusText = "$errorPrefix$message"
+                        statusText = friendlyConnectionError(
+                            message = message,
+                            serverAddress = serverAddress,
+                            unknownHostPrefix = unknownHostPrefix,
+                        ) ?: "$errorPrefix$message"
                     }
                 }
             },
@@ -363,7 +408,7 @@ private fun ControllerApp(
             } else {
                 rainbowIndex = next
             }
-            delay(400)
+            delay(400.milliseconds)
         }
     }
 
@@ -379,7 +424,7 @@ private fun ControllerApp(
                 }
             }
             hyperCount += 1
-            delay(10)
+            delay(15.milliseconds)
         }
     }
 
@@ -407,7 +452,7 @@ private fun ControllerApp(
                         Row(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(start = 16.dp, end = 8.dp, top = 12.dp, bottom = 0.dp),
+                                .padding(start = 16.dp, end = 8.dp, top = 12.dp, bottom = 4.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
@@ -714,6 +759,7 @@ internal fun ScrollablePage(
     }
 }
 
+@Suppress("FrequentlyChangingValue")
 @Composable
 private fun DesktopScrollbar(state: ScrollState, modifier: Modifier = Modifier) {
     val scope = rememberCoroutineScope()
@@ -792,19 +838,6 @@ private fun SectionTitle(text: String) {
 }
 
 internal fun ResponsivePageScope.segmentedSection(
-    title: String,
-    content: @Composable ColumnScope.() -> Unit,
-) {
-    item {
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            SectionTitle(title)
-            SegmentedGroup(content)
-            Spacer(Modifier.size(4.dp))
-        }
-    }
-}
-
-internal fun ResponsivePageScope.segmentedSection(
     title: StringResource,
     content: @Composable ColumnScope.() -> Unit,
 ) {
@@ -814,14 +847,6 @@ internal fun ResponsivePageScope.segmentedSection(
             SegmentedGroup(content)
             Spacer(Modifier.size(4.dp))
         }
-    }
-}
-
-private fun ResponsivePageScope.segmentedGroup(
-    content: @Composable ColumnScope.() -> Unit,
-) {
-    item {
-        SegmentedGroup(content)
     }
 }
 

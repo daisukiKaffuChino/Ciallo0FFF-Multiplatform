@@ -1,6 +1,5 @@
 package io.github.daisukikaffuchino.ciallo0fff.pages
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf

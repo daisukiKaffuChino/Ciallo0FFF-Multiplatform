@@ -23,6 +23,11 @@ import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 import kotlin.concurrent.thread
 import kotlin.system.exitProcess
+import org.java_websocket.client.WebSocketClient
+import org.java_websocket.drafts.Draft
+import org.java_websocket.drafts.Draft_6455
+import org.java_websocket.extensions.permessage_deflate.PerMessageDeflateExtension
+import org.java_websocket.handshake.ServerHandshake
 
 actual object AppSettings {
     private val prefs = Preferences.userRoot().node("io/github/daisukikaffuchino/ciallo0fff")
@@ -133,13 +138,64 @@ actual class PlatformWebSocketClient actual constructor(
     options: WebSocketOptions,
     private val events: WebSocketEvents,
 ) {
-    private val socketClient = BasicWebSocketClient(url, options, events)
+    private val uri = URI(url)
+    private val socketClient = object : WebSocketClient(uri, perMessageDeflateDraft(), webSocketHeaders(options)) {
+        override fun onOpen(handshakedata: ServerHandshake?) {
+            events.onOpen()
+        }
 
-    actual fun connect() = socketClient.connect()
-    actual fun send(text: String): Boolean = socketClient.send(text)
-    actual fun close() = socketClient.close()
-    actual fun isOpen(): Boolean = socketClient.isOpen()
+        override fun onMessage(message: String?) {
+            message?.let(events::onMessage)
+        }
+
+        override fun onClose(code: Int, reason: String?, remote: Boolean) {
+            events.onClosed(code, reason)
+        }
+
+        override fun onError(ex: Exception?) {
+            events.onError(ex?.message ?: ex?.javaClass?.simpleName ?: "WebSocket error")
+        }
+    }.apply {
+        if (uri.scheme.equals("wss", ignoreCase = true) && options.trustAllCertificates) {
+            setSocketFactory(trustAllSocketFactory())
+        }
+    }
+
+    actual fun connect() {
+        socketClient.connect()
+    }
+
+    actual fun send(text: String): Boolean =
+        socketClient.isOpen && runCatching {
+            socketClient.send(text)
+            true
+        }.getOrElse {
+            events.onError(it.message ?: "send failed")
+            false
+        }
+
+    actual fun close() {
+        runCatching { socketClient.close() }
+    }
+
+    actual fun isOpen(): Boolean = socketClient.isOpen
 }
+
+private fun perMessageDeflateDraft(): Draft =
+    Draft_6455(PerMessageDeflateExtension())
+
+private fun webSocketHeaders(options: WebSocketOptions): Map<String, String> =
+    if (options.fullRequestHeaders) {
+        mapOf(
+            "Pragma" to "no-cache",
+            "Cache-Control" to "no-cache",
+            "User-Agent" to options.userAgent,
+            "Origin" to "http://0fff.top",
+            "Accept-Language" to "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7",
+        )
+    } else {
+        emptyMap()
+    }
 
 private class BasicWebSocketClient(
     url: String,

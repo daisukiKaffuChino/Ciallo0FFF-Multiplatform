@@ -28,7 +28,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Ciallo0FFF"
-            packageVersion = "2.0.0"
+            packageVersion = "2.1.0"
             vendor = "daisukiKaffuChino"
             copyright = "© 2026 daisukiKaffuChino. All rights reserved."
             description = "Live-Controller WebSocket Client."

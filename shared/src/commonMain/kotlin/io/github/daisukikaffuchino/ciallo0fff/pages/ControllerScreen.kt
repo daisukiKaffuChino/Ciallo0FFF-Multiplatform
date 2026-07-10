@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -50,9 +51,11 @@ import androidx.compose.ui.unit.dp
 import ciallo0fff.shared.generated.resources.*
 import ciallo0fff.shared.generated.resources.Res
 import com.yhz.composetoast.Toast
+import io.github.daisukikaffuchino.ciallo0fff.ColorCommand
 import io.github.daisukikaffuchino.ciallo0fff.CommandDialog
 import io.github.daisukikaffuchino.ciallo0fff.ControllerColors
 import io.github.daisukikaffuchino.ciallo0fff.HyperMode
+import io.github.daisukikaffuchino.ciallo0fff.Kanban
 import io.github.daisukikaffuchino.ciallo0fff.ScrollablePage
 import io.github.daisukikaffuchino.ciallo0fff.expressiveContainerColor
 import io.github.daisukikaffuchino.ciallo0fff.expressiveShape
@@ -83,10 +86,10 @@ internal fun ControllerScreen(
     rainbowRounds: Int,
     hyperActive: Boolean,
     setHyperActive: (Boolean) -> Unit,
-    hyperMode: io.github.daisukikaffuchino.ciallo0fff.HyperMode,
-    setHyperMode: (io.github.daisukikaffuchino.ciallo0fff.HyperMode) -> Unit,
+    hyperMode: HyperMode,
+    setHyperMode: (HyperMode) -> Unit,
     hyperCount: Int,
-    kanban: io.github.daisukikaffuchino.ciallo0fff.Kanban,
+    kanban: Kanban,
     hideDesktopScrollbar: Boolean,
 ) {
     var customCommandOpen by remember { mutableStateOf(false) }
@@ -186,7 +189,7 @@ private fun StatusPanel(connected: Boolean, connecting: Boolean, userText: Strin
 }
 
 @Composable
-private fun KanbanPanel(kanban: io.github.daisukikaffuchino.ciallo0fff.Kanban) {
+private fun KanbanPanel(kanban: Kanban) {
     val kanbanLabel = stringResource(kanban.labelRes)
     Card(
         shape = expressiveShape(),
@@ -468,25 +471,33 @@ private fun ColorGrid(
     sendCommand: (String, String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        ControllerColors.chunked(3).forEach { rowItems ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                rowItems.forEach { item ->
-                    val label = stringResource(item.labelRes)
-                    ColorTile(
-                        item = item,
-                        label = label,
-                        enabled = enabled,
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        sendCommand(item.name, label)
+    BoxWithConstraints(modifier = modifier) {
+        val columns = when {
+            maxWidth >= 840.dp -> 6
+            maxWidth >= 680.dp -> 5
+            maxWidth >= 520.dp -> 4
+            else -> 3
+        }
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            ControllerColors.chunked(columns).forEach { rowItems ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    rowItems.forEach { item ->
+                        val label = stringResource(item.labelRes)
+                        ColorTile(
+                            item = item,
+                            label = label,
+                            enabled = enabled,
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            sendCommand(item.name, label)
+                        }
                     }
-                }
-                repeat(3 - rowItems.size) {
-                    Spacer(modifier = Modifier.weight(1f))
+                    repeat(columns - rowItems.size) {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
                 }
             }
         }
@@ -495,7 +506,7 @@ private fun ColorGrid(
 
 @Composable
 private fun ColorTile(
-    item: io.github.daisukikaffuchino.ciallo0fff.ColorCommand,
+    item: ColorCommand,
     label: String,
     enabled: Boolean,
     modifier: Modifier = Modifier,

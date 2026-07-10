@@ -32,6 +32,7 @@ bin/
 gen/
 lint-results*.html
 lint-results*.xml
+androidApp/release
 
 # Kotlin Native / Multiplatform
 *.klib

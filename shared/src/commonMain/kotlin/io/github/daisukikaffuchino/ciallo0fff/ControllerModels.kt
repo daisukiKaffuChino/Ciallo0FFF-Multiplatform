@@ -45,8 +45,8 @@ import org.jetbrains.compose.resources.StringResource
 const val DefaultServerAddress = "wss://ws.0fff.top"
 const val DefaultIdentityJson = """{"client_type":"controller","client_id":null}"""
 const val DevelopmentModeServerPayload = """{"type":"status","message":"Welcome controller 123"}"""
-const val AppVersionName = "2.0.0"
-const val AppVersionCode = 260709
+const val AppVersionName = "2.1.0"
+const val AppVersionCode = 260710
 const val AppVersionDisplay = "$AppVersionName ($AppVersionCode)"
 
 enum class AppPage(val titleRes: StringResource) {

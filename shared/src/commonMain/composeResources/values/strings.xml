@@ -23,6 +23,7 @@
     <string name="status_send_failed_at">发送失败 - %1$s</string>
     <string name="status_connection_closed_prefix">连接关闭：</string>
     <string name="status_error_prefix">错误：</string>
+    <string name="status_error_unknown_host_prefix">无法解析服务器地址：</string>
 
     <string name="action_save">保存</string>
     <string name="action_send">发送</string>

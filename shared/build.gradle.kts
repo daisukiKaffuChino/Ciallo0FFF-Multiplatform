@@ -20,7 +20,7 @@ kotlin {
 
     jvm()
 
-    androidLibrary {
+    android {
         namespace = "io.github.daisukikaffuchino.ciallo0fff.shared"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
@@ -39,6 +39,10 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
+            implementation(libs.java.websocket)
+        }
+        jvmMain.dependencies {
+            implementation(libs.java.websocket)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
