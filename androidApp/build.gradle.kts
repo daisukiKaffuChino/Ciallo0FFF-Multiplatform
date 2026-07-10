@@ -30,6 +30,10 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 260710
         versionName = "2.1.0"
+        ndk {
+            abiFilters.add("x86_64")
+            abiFilters.add("arm64-v8a")
+        }
     }
     packaging {
         resources {
