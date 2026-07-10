@@ -52,6 +52,52 @@ actual fun formattedNow(): String =
 
 actual fun platformDynamicColorScheme(darkTheme: Boolean): ColorScheme? = null
 
+actual fun platformSystemDarkTheme(): Boolean? {
+    val osName = System.getProperty("os.name").lowercase()
+    return when {
+        "windows" in osName -> windowsSystemDarkTheme()
+        "mac" in osName || "darwin" in osName -> macOsSystemDarkTheme()
+        else -> null
+    }
+}
+
+private fun windowsSystemDarkTheme(): Boolean? {
+    val output = commandOutput(
+        "reg",
+        "query",
+        "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+        "/v",
+        "AppsUseLightTheme",
+    ) ?: return null
+    val value = Regex("""AppsUseLightTheme\s+REG_DWORD\s+0x([0-9a-fA-F]+)""")
+        .find(output)
+        ?.groupValues
+        ?.getOrNull(1)
+        ?.toIntOrNull(16)
+        ?: return null
+    return value == 0
+}
+
+private fun macOsSystemDarkTheme(): Boolean? {
+    val output = commandOutput("defaults", "read", "-g", "AppleInterfaceStyle")
+    return output?.trim()?.equals("Dark", ignoreCase = true) ?: false
+}
+
+private fun commandOutput(vararg command: String): String? =
+    runCatching {
+        val process = ProcessBuilder(*command)
+            .redirectErrorStream(true)
+            .start()
+        val output = process.inputStream.bufferedReader().readText()
+        val finished = process.waitFor(2, java.util.concurrent.TimeUnit.SECONDS)
+        if (!finished) {
+            process.destroyForcibly()
+            null
+        } else {
+            output
+        }
+    }.getOrNull()
+
 actual object PlatformActions {
     actual val isAndroid: Boolean = false
     actual val usesDesktopScrollbars: Boolean = true
@@ -76,6 +122,7 @@ actual object PlatformActions {
     actual fun openLiveRoomClient() = Unit
     actual fun requestIgnoreBatteryOptimization(): Boolean = false
     actual fun openExtremeDarkModeSettings() = Unit
+    actual fun applyThemeMode(mode: ThemeMode) = Unit
     actual fun exitApp() {
         exitProcess(0)
     }

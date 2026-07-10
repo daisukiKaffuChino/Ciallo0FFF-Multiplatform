@@ -91,6 +91,8 @@ actual fun platformDynamicColorScheme(darkTheme: Boolean): ColorScheme? {
     return if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
 }
 
+actual fun platformSystemDarkTheme(): Boolean? = null
+
 actual object PlatformActions {
     actual val isAndroid: Boolean = true
     actual val usesDesktopScrollbars: Boolean = false
@@ -145,6 +147,8 @@ actual object PlatformActions {
         if (!supportsExtremeDarkMode) return
         startActivity(Intent("android.settings.REDUCE_BRIGHT_COLORS_SETTINGS"))
     }
+
+    actual fun applyThemeMode(mode: ThemeMode) = Unit
 
     actual fun exitApp() {
         AndroidContextHolder.activity?.get()?.finishAndRemoveTask()

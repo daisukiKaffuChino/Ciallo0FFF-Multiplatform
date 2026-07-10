@@ -6,6 +6,9 @@ import platform.Foundation.NSURL
 import platform.Foundation.NSDate
 import platform.Foundation.NSDateFormatter
 import platform.UIKit.UIApplication
+import platform.UIKit.UIUserInterfaceStyleDark
+import platform.UIKit.UIUserInterfaceStyleLight
+import platform.UIKit.UIUserInterfaceStyleUnspecified
 
 actual object AppSettings {
     private val defaults = NSUserDefaults.standardUserDefaults
@@ -39,6 +42,8 @@ actual fun formattedNow(): String =
 
 actual fun platformDynamicColorScheme(darkTheme: Boolean): ColorScheme? = null
 
+actual fun platformSystemDarkTheme(): Boolean? = null
+
 actual object PlatformActions {
     actual val isAndroid: Boolean = false
     actual val usesDesktopScrollbars: Boolean = false
@@ -57,6 +62,16 @@ actual object PlatformActions {
     actual fun openLiveRoomClient() = Unit
     actual fun requestIgnoreBatteryOptimization(): Boolean = false
     actual fun openExtremeDarkModeSettings() = Unit
+    actual fun applyThemeMode(mode: ThemeMode) {
+        val style = when (mode) {
+            ThemeMode.System -> UIUserInterfaceStyleUnspecified
+            ThemeMode.Light -> UIUserInterfaceStyleLight
+            ThemeMode.Dark -> UIUserInterfaceStyleDark
+        }
+        IosRootViewControllerHolder.controller?.overrideUserInterfaceStyle = style
+        UIApplication.sharedApplication.keyWindow?.overrideUserInterfaceStyle = style
+    }
+
     actual fun exitApp() = Unit
 }
 

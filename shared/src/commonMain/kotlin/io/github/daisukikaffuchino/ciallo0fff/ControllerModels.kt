@@ -74,9 +74,9 @@ enum class HyperMode(val labelRes: StringResource) {
 }
 
 enum class Kanban(val labelRes: StringResource) {
-    Yoshino(Res.string.kanban_yoshino),
-    Murasame(Res.string.kanban_murasame),
     Meguru(Res.string.kanban_meguru),
+    Yoshino(Res.string.kanban_yoshino),
+    Murasame(Res.string.kanban_murasame)
 }
 
 data class ColorCommand(
@@ -146,6 +146,7 @@ expect fun userAgentChromeVersion(): String
 expect fun userAgentBuildId(): String
 expect fun formattedNow(): String
 expect fun platformDynamicColorScheme(darkTheme: Boolean): ColorScheme?
+expect fun platformSystemDarkTheme(): Boolean?
 
 expect object PlatformActions {
     val isAndroid: Boolean
@@ -159,6 +160,7 @@ expect object PlatformActions {
     fun openUrl(url: String)
     fun requestIgnoreBatteryOptimization(): Boolean
     fun openExtremeDarkModeSettings()
+    fun applyThemeMode(mode: ThemeMode)
     fun exitApp()
 }
 

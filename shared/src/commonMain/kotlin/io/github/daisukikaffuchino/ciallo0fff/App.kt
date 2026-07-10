@@ -70,8 +70,12 @@ fun App() {
     var dynamicColor by remember {
         mutableStateOf(AppSettings.getBoolean("dynamicColor", false) && PlatformActions.supportsDynamicColor)
     }
+    val composeSystemDarkTheme = isSystemInDarkTheme()
+    val platformSystemDarkTheme = remember(themeMode, composeSystemDarkTheme) {
+        platformSystemDarkTheme()
+    }
     val darkTheme = when (themeMode) {
-        ThemeMode.System -> isSystemInDarkTheme()
+        ThemeMode.System -> platformSystemDarkTheme ?: composeSystemDarkTheme
         ThemeMode.Light -> false
         ThemeMode.Dark -> true
     }
@@ -79,6 +83,9 @@ fun App() {
         platformDynamicColorScheme(darkTheme) ?: sakuraColorScheme(darkTheme)
     } else {
         sakuraColorScheme(darkTheme)
+    }
+    LaunchedEffect(themeMode) {
+        PlatformActions.applyThemeMode(themeMode)
     }
     MaterialTheme(
         colorScheme = colorScheme,
@@ -200,7 +207,7 @@ private fun ControllerApp(
             )
         )
     }
-    var kanban by remember { mutableStateOf(Kanban.valueOf(AppSettings.getString("kanban", Kanban.Yoshino.name))) }
+    var kanban by remember { mutableStateOf(Kanban.valueOf(AppSettings.getString("kanban", Kanban.Meguru.name))) }
     var fullRequestHeaders by remember { mutableStateOf(AppSettings.getBoolean("fullRequestHeaders", true)) }
     var trustAllCertificates by remember { mutableStateOf(AppSettings.getBoolean("trustAllCertificates", true)) }
     var autoReconnect by remember { mutableStateOf(false) }
