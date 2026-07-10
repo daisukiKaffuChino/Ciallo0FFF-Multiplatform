@@ -49,7 +49,7 @@ jobs:
       - name: Collect artifact
         run: |
           mkdir -p artifacts
-          cp desktopApp/build/compose/binaries/main/dmg/*.dmg "artifacts/Ciallo0FFF-macos-${{ matrix.arch }}.dmg"
+          cp desktopApp/build/compose/binaries/main-release/dmg/*.dmg "artifacts/Ciallo0FFF-macos-${{ matrix.arch }}.dmg"
 
       - name: Upload DMG
         uses: actions/upload-artifact@v5
