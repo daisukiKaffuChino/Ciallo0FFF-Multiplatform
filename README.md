@@ -4,16 +4,16 @@ Ciallo0FFF is a Kotlin Multiplatform WebSocket controller for the **0fff.top** l
 
 ## Screenshots
 
-| Controller | Settings | About |
+| Desktop(Light) | Desktop(Dark) | Phone |
 | --- | --- | --- |
-| _Coming soon_ | _Coming soon_ | _Coming soon_ |
+| <img src="./image/screenshot1.png" alt="Screenshot"/> | <img src="./image/screenshot2.png" alt="Screenshot"/> | <img src="./image/screenshot3.png" alt="Screenshot"/> |
 
 ## Supported Platforms
 
 | Platform   | Architecture                          | Minimum      |
 |------------|---------------------------------------------|--------------|
 | Android    | arm64, x64                            | Android 10   |
-| Windows 11 | x64                                   | Windows 10   |
+| Windows    | x64                                   | Windows 10   |
 | macOS      | arm64, x64                            | macOS 11     |
 | iOS        | arm64                                 | iOS 16       |
 | Linux      | Untested, build it yourself           |              |
