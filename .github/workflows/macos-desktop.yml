@@ -1,0 +1,59 @@
+name: macOS Desktop Packages
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  package-macos:
+    name: macOS ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: macos-15-intel
+          - arch: arm64
+            runner: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Configure Gradle memory
+        run: |
+          mkdir -p ~/.gradle
+          {
+            echo "org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8"
+            echo "kotlin.daemon.jvmargs=-Xmx2048M"
+          } >> ~/.gradle/gradle.properties
+
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
+
+      - name: Package DMG
+        run: ./gradlew :desktopApp:packageDmg --no-configuration-cache --stacktrace
+
+      - name: Collect artifact
+        run: |
+          mkdir -p artifacts
+          cp desktopApp/build/compose/binaries/main/dmg/*.dmg "artifacts/Ciallo0FFF-macos-${{ matrix.arch }}.dmg"
+
+      - name: Upload DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: Ciallo0FFF-macos-${{ matrix.arch }}
+          path: artifacts/*.dmg
+          if-no-files-found: error

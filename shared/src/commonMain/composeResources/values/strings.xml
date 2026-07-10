@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ciallo0FFF</string>
+    <string name="app_subtitle">Live-Controller WebSocket Client</string>
+
+    <string name="page_controller">控制台</string>
+    <string name="page_settings">设置</string>
+    <string name="page_about">关于</string>
+
+    <string name="status_online">在线</string>
+    <string name="status_offline">离线</string>
+    <string name="status_disconnected">未连接</string>
+    <string name="status_idle">暂无通信</string>
+    <string name="status_connecting">正在连接</string>
+    <string name="status_connected">连接成功</string>
+    <string name="status_send_success">发送成功</string>
+    <string name="status_send_failure">发送失败</string>
+    <string name="status_identity_sent">身份请求已发送</string>
+    <string name="status_sent">已发送</string>
+    <string name="status_send_failed">未连接，发送失败</string>
+    <string name="status_connected_at">连接成功 - %1$s</string>
+    <string name="status_send_success_at">发送成功 - %1$s</string>
+    <string name="status_send_failed_at">发送失败 - %1$s</string>
+    <string name="status_connection_closed_prefix">连接关闭：</string>
+    <string name="status_error_prefix">错误：</string>
+
+    <string name="action_save">保存</string>
+    <string name="action_send">发送</string>
+    <string name="action_cancel">取消</string>
+    <string name="action_connect">连接</string>
+    <string name="action_disconnect">断开</string>
+    <string name="action_more">更多</string>
+    <string name="action_live_room">直播间</string>
+    <string name="action_open_in_client">通过客户端打开</string>
+    <string name="action_exit_run">/run</string>
+
+    <string name="command_light_on">开灯</string>
+    <string name="command_light_off">关灯</string>
+    <string name="command_toggle">切换</string>
+    <string name="command_custom">自定义指令</string>
+
+    <string name="hyper_mode_on">开灯</string>
+    <string name="hyper_mode_off">关灯</string>
+    <string name="hyper_mode_toggle">切换</string>
+    <string name="hyper_mode_title">高速循环模式</string>
+    <string name="hyper_start">高速循环发送</string>
+    <string name="hyper_stop">停止高速循环</string>
+    <string name="format_times">%1$d 次</string>
+    <string name="format_sent_times">已发送 %1$d 次</string>
+
+    <string name="rainbow_show_more">显示更多颜色</string>
+    <string name="rainbow_show_more_summary">颜色网格与自动彩虹</string>
+    <string name="rainbow_start">自动彩虹</string>
+    <string name="rainbow_stop">停止彩虹</string>
+    <string name="format_sent_rounds">已发送 %1$d 轮</string>
+
+    <string name="ua_mode_default">默认</string>
+    <string name="ua_mode_random">随机</string>
+    <string name="ua_mode_custom">自定义</string>
+    <string name="theme_mode_system">跟随系统</string>
+    <string name="theme_mode_light">禁用</string>
+    <string name="theme_mode_dark">启用</string>
+
+    <string name="kanban_yoshino">Tomotake Yoshino</string>
+    <string name="kanban_murasame">Murasame</string>
+    <string name="kanban_meguru">Inaba Meguru</string>
+
+    <string name="section_connection">连接</string>
+    <string name="section_theme">主题</string>
+    <string name="section_external_options">外部选项</string>
+    <string name="section_desktop">Desktop</string>
+    <string name="section_developer">开发</string>
+    <string name="setting_server_address">服务器地址</string>
+    <string name="setting_identity_request">身份请求</string>
+    <string name="setting_user_agent">UserAgent</string>
+    <string name="setting_full_headers">完整请求头</string>
+    <string name="setting_full_headers_summary">模拟浏览器握手字段</string>
+    <string name="setting_trust_ssl">兼容 SSL 证书</string>
+    <string name="setting_trust_ssl_summary">允许自签名或异常证书</string>
+    <string name="setting_kanban">看板</string>
+    <string name="setting_dark_mode">深色模式</string>
+    <string name="setting_dynamic_color">动态取色</string>
+    <string name="setting_dynamic_color_summary">Android 12+ 可由系统接管动态色</string>
+    <string name="setting_ignore_battery">忽略省电优化</string>
+    <string name="setting_ignore_battery_summary">请求系统允许后台更稳定地保持连接</string>
+    <string name="setting_extreme_dark_mode">极暗模式</string>
+    <string name="setting_extreme_dark_mode_summary">打开 Android 的降低亮色设置</string>
+    <string name="setting_hide_scrollbar">隐藏滚动条</string>
+    <string name="setting_hide_scrollbar_summary">关闭桌面端右侧可拖拽滚动条</string>
+    <string name="setting_development_mode">开发模式</string>
+    <string name="setting_development_mode_summary">模拟服务器数据包并连接成功</string>
+    <string name="setting_default">默认</string>
+    <string name="setting_custom">自定义</string>
+    <string name="setting_restore_default">恢复默认</string>
+    <string name="dialog_server_address">设置 WebSocket 服务器</string>
+    <string name="dialog_identity_request">设置身份请求包</string>
+    <string name="dialog_custom_user_agent">自定义 UserAgent</string>
+    <string name="dialog_select_kanban">选择看板</string>
+
+    <string name="setting_auto_reconnect">自动重连</string>
+
+    <string name="section_project">项目</string>
+    <string name="section_other">其它</string>
+    <string name="about_version">版本</string>
+    <string name="about_app_developer">应用开发</string>
+    <string name="about_app_developer_summary">Github@daisukiKaffuChino</string>
+    <string name="about_open_source">开放源代码</string>
+    <string name="about_open_source_summary">github.com/daisukikaffuchino/Ciallo0FFF-Multiplatform，以 Apache-2.0 协议授权。</string>
+    <string name="about_changelog">更新日志</string>
+    <string name="about_changelog_summary">2.0.0 弃用 reOpenLua+，使用跨平台技术重构项目。</string>
+    <string name="about_overview">应用概览</string>
+    <string name="about_overview_summary">这是一个用于 0fff.top 直播间背景控制的 WebSocket 客户端，基于 Kotlin Multiplatform 技术构建，现支持 Windows/macOS/Android/iOS 平台。不得滥用和故意攻击他人服务器，产生的所有后果与开发者无关。本应用与柚子社无关。\n致谢 @財神貓貓</string>
+    <string name="about_tips">Tips</string>
+    <string name="about_tips_summary">自动重连可配合循环发送保持后台控制；长时间使用时建议在系统里允许后台运行。</string>
+    <string name="toast_clover">🍀</string>
+    <string name="toast_server_address_empty">服务器地址不能为空</string>
+    <string name="toast_identity_json_invalid">身份请求必须是 JSON 对象或数组</string>
+    <string name="toast_custom_user_agent_empty">自定义 UserAgent 不能为空</string>
+    <string name="toast_custom_command_invalid">自定义指令必须是 JSON 对象或数组</string>
+    <string name="toast_custom_command_send_failed">未连接，指令未发送</string>
+
+    <string name="color_red">红色</string>
+    <string name="color_blue">蓝色</string>
+    <string name="color_pink">粉色</string>
+    <string name="color_green">绿色</string>
+    <string name="color_yellow">黄色</string>
+    <string name="color_purple">紫色</string>
+    <string name="color_orange">橙色</string>
+    <string name="color_gray">灰色</string>
+    <string name="color_brown">棕色</string>
+    <string name="color_cyan">蓝绿</string>
+    <string name="color_magenta">洋红</string>
+    <string name="color_gold">金色</string>
+    <string name="color_silver">银色</string>
+    <string name="color_teal">水鸭青</string>
+    <string name="color_lavender">薰衣草</string>
+    <string name="color_coral">珊瑚</string>
+    <string name="color_indigo">靛蓝</string>
+    <string name="color_olive">橄榄</string>
+    <string name="color_maroon">栗色</string>
+    <string name="color_turquoise">绿松石</string>
+    <string name="color_salmon">鲑鱼</string>
+    <string name="color_navy">海军蓝</string>
+</resources>
