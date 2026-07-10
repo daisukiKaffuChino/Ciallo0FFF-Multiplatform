@@ -11,18 +11,8 @@ permissions:
 
 jobs:
   build-ios:
-    name: iOS ${{ matrix.name }}
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: device-arm64
-            runner: macos-15
-            configuration: Release
-            sdk: iphoneos
-            destination: generic/platform=iOS
-            gradle-task: :shared:linkReleaseFrameworkIosArm64
+    name: iOS device-arm64
+    runs-on: macos-latest
 
     steps:
       - name: Checkout
@@ -45,23 +35,41 @@ jobs:
       - name: Make Gradle executable
         run: chmod +x ./gradlew
 
-      - name: Show tool versions
+      - name: Show installed Xcode
         run: |
+          echo "===== macOS ====="
+          sw_vers
+
+          echo "===== Installed Xcodes ====="
+          ls -1 /Applications | grep Xcode || true
+
+          echo "===== Selecting newest Xcode ====="
+
+          if [ -d "/Applications/Xcode_26.5.app" ]; then
+            sudo xcode-select -s /Applications/Xcode_26.5.app/Contents/Developer
+          elif [ -d "/Applications/Xcode_26.0.app" ]; then
+            sudo xcode-select -s /Applications/Xcode_26.0.app/Contents/Developer
+          elif [ -d "/Applications/Xcode.app" ]; then
+            sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+          fi
+
           xcodebuild -version
-          ./gradlew --version
 
       - name: Build Kotlin framework
-        run: ./gradlew ${{ matrix.gradle-task }} --no-configuration-cache --stacktrace
+        run: |
+          ./gradlew :shared:linkReleaseFrameworkIosArm64 \
+            --no-configuration-cache \
+            --stacktrace
 
       - name: Build iOS app
         run: |
           xcodebuild \
             -project iosApp/iosApp.xcodeproj \
             -scheme iosApp \
-            -configuration "${{ matrix.configuration }}" \
-            -sdk "${{ matrix.sdk }}" \
-            -destination "${{ matrix.destination }}" \
-            -derivedDataPath "build/ios-${{ matrix.name }}" \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination "generic/platform=iOS" \
+            -derivedDataPath build/ios-device-arm64 \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             build
@@ -69,6 +77,6 @@ jobs:
       - name: Upload build products
         uses: actions/upload-artifact@v4
         with:
-          name: Ciallo0FFF-ios-${{ matrix.name }}
-          path: build/ios-${{ matrix.name }}/Build/Products
+          name: Ciallo0FFF-ios-device-arm64
+          path: build/ios-device-arm64/Build/Products
           if-no-files-found: error
